@@ -100,7 +100,3 @@ Refer to the scripts within the `src/` directory for specific arguments and exec
 1. Placing input PDFs into `data/pdfs/`.
 2. Running the sequence of scripts for conversion, OCR, cleaning, and JSON generation.
 3. Checking `data/processed_json/` for outputs.
-
-## Memory Bank
-
-This project uses a `memory-bank/` directory to store detailed, evolving documentation about its context, architecture, progress, and technical details. This is used by AI assistants to maintain continuity and understanding of the project over time. For more details on its structure and purpose, refer to the `ai_instructions.md` (if available, or the general concept outlined by the AI assistant).
