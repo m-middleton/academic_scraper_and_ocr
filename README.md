@@ -52,13 +52,6 @@ final_project/
 │   ├── processed_text/
 │   ├── processed_json/
 │   └── metrics/
-├── memory-bank/            # Project context and documentation (see below)
-│   ├── projectbrief.md
-│   ├── productContext.md
-│   ├── techContext.md
-│   ├── systemPatterns.md
-│   ├── activeContext.md
-│   └── progress.md
 └── src/                    # Custom Python scripts for pipeline stages
     ├── scrapper/
     │   └── paper_scrape.py
