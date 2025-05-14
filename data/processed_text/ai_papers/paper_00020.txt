@@ -1,0 +1,135 @@
+\title{
+EVALUATING UNIVERSAL INVERTED BOTTLENECK BLOCKS IN MOBILENETV4 ARCHITECTURES
+}
+
+\begin{abstract}
+This paper introduces and evaluates the Universal Inverted Bottleneck (UIB) block, a flexible extension of the MobileNet Inverted Bottleneck block, in the context of MobileNetV4 architectures. Designing efficient neural network architectures for mobile devices remains challenging due to the trade-offs between model accuracy, computational complexity, and inference speed. We propose the UIB block, which incorporates optional depthwise convolutions before and after the expansion layer, allowing for four distinct variants: the original Inverted Bottleneck, ConvNextlike, ExtraDW, and Feed-Forward Network. We implement these UIB blocks in MobileNetV4-style models of varying sizes (Small, Medium, and Large) and evaluate their performance on the CIFAR-10 image classification task. Our experiments demonstrate that UIB-based models can achieve significant improvements in accuracy compared to baseline architectures, with the MobileNetV4-Small model showing an 11.91 percentage point increase in test accuracy (from 65.93 % to 77.84 % ) over the baseline. Interestingly, the MobileNetV4-Medium and Large models show slightly lower accuracies (77.27% and 77.40% respectively) compared to the Small model, highlighting the importance of careful architecture design. The ExtraDW variant, while improving over the baseline, underperforms compared to the original UIB configuration. These results suggest that the UIB block's flexibility can lead to more efficient and accurate models for mobile vision tasks, paving the way for further research into adaptive neural network architectures.
+\end{abstract}
+\section*{1 INTRODUCTION}
+The rapid proliferation of mobile and edge computing devices has led to an increasing demand for efficient neural network architectures capable of running on resource-constrained hardware. These models must strike a delicate balance between accuracy, computational complexity, and inference speed to enable real-time processing across a wide range of mobile platforms. The MobileNet family of models has emerged as a popular choice for mobile vision tasks, leveraging depthwise separable convolutions and inverted residual bottleneck blocks to achieve high performance with low computational requirements [Goodfellow et al. .
+Designing efficient neural network architectures for mobile devices remains challenging due to the fixed structure of traditional convolutional blocks, such as the Inverted Bottleneck block used in MobileNetV2 and subsequent variants. These fixed structures may limit their ability to adapt to different task requirements and hardware constraints. Furthermore, optimizing the trade-offs between model size, accuracy, and inference speed is often difficult, particularly when considering the diverse landscape of mobile hardware.
+To address these challenges, we introduce the Universal Inverted Bottleneck (UIB) block, a flexible extension of the Inverted Bottleneck block that incorporates optional depthwise convolutions before and after the expansion layer. This novel architecture allows for four distinct variants: the original Inverted Bottleneck, a ConvNext-like block, an ExtraDW configuration, and a Feed-Forward Network. By providing this flexibility, the UIB block enables more adaptive and efficient neural network designs for mobile vision tasks.
+We evaluate the performance of UIB-based models in the context of the MobileNetV4 architecture, assessing their accuracy and computational complexity on the CIFAR-10 image classification task. Our experiments demonstrate that UIB-based modelscan achieve significant improvements in
+accuracy compared to baseline architectures. The MobileNetV4-Small model with UIB blocks shows an 11.91 percentage point increase in test accuracy (from 65.93 % to 77.84 % ) over the baseline. Interestingly, the MobileNetV4-Medium and Large models show slightly lower accuracies (77.27% and 77.40% respectively) compared to the Small model, highlighting the importance of careful architecture design.
+The main contributions of this paper are as follows:
+- We propose the Universal Inverted Bottleneck (UIB) block, a flexible extension of the Inverted Bottleneck block that enables four distinct architectural variants.
+- We implement and evaluate UIB-based MobileNetV4 architectures of varying sizes (Small, Medium, and Large) on the CIFAR-10 dataset.
+- We provide a comprehensive analysis of the performance trade-offs between different UIB variants and model sizes, offering insights into efficient mobile neural network design.
+Our findings pave the way for further research into adaptive neural network architectures for mobile devices. Future work could explore the application of UIB blocks in other mobile-focused model families, as well as investigate techniques for automatically selecting the optimal UIB variant for a given task and hardware constraint. Additionally, extending the evaluation to larger-scale datasets and real-world mobile deployment scenarios would provide valuable insights into the practical implications of the UIB block.
+\section*{2 RELATED WORK}
+MobileNetV1 introduced depthwise separable convolutions, significantly reducing the number of parameters and computations required Forward et al. (2017).
+\section*{3 BACKGROUND}
+Mobile-focused neural network architectures have become increasingly important due to the growing demand for efficient on-device inference. These architectures aim to balance model accuracy and computational efficiency, enabling real-time processing on resource-constrained devices (Goodfellow et al. (2016). The MobileNet family of models has been at the forefront of this effort, introducing key innovations to reduce computational complexity while maintaining high accuracy.
+MobileNetV1 introduced depthwise separable convolutions, significantly reducing the number of parameters and Computations required (Goodfellow et al. (2016). MobileNetV2 further improved upon this design by introducing the inverted residual block with linear bottlenecks, allowing for more efficient feature representation Sandler et al. (2018). These innovations have paved the way for subsequent improvements in mobile-focused architectures.
+Complementary to these architectural advancements, attention mechanisms have played a crucial role in improving the efficiency and effectiveness of neural networks. Initially introduced in the context of neural machine translation Bahdanau et al. (2014), attention mechanisms, particularly self-attention as demonstrated in the transformer architecture Vaswani et al. (2017), have led to significant advancements in various domains, including computer vision.
+Advancements in normalization techniques, such as Layer Normalization [Ba et al. (2016], have contributed to more stable and efficient training of deep neural networks. Similarly, optimization algorithms like Adam [Kingma & Ba (2014) and its variants, such as AdamW Loshchilov & Hutter (2017), have improved the training process and generalization capabilities of neural networks.
+\subsection*{3.1 PROBLEM SETTING}
+In this work, we focus on the task of image classification, a fundamental problem in computer vision. Given an input image x \in \mathbb{R}^H \times W \times C, where H, W, and C represent the height, width, and number of channels respectively, our goal is to predict a class label y \in{1,2, \ldots, K}, where K is the number of possible classes.
+We define our neural network model as a function f_0: \mathbb{R}^H \times W \times C \rightarrow \mathbb{R}^K, parameterized by \theta. The model outputs a probability distribution over the K classes, and we typically use the cross-entropy loss for training:
+\[
+\mathcal{L}(\theta)=-\frac{1}{N} \sum_i=1^N \sum_k=1^K y_i k \log (f_\theta(x_i)_k)
+\]
+where N is the number of training samples, and y_i k is 1 if the i-th sample belongs to class k, and 0 otherwise.
+For mobile-focused models, we make the following key assumptions and constraints:
+- Limited computational resources: The model should run efficiently on devices with constrained computational power and memory.
+- Low latency: The model should be capable of real-time inference, typically requiring low latency (e.g., <100ms per image).
+- Energy efficiency: The model should minimize energy consumption to preserve battery life on mobile devices.
+These constraints guide our design choices in developing the Universal Inverted Bottleneck (UIB) block and the overall MobileNetV4 architecture. By addressing these challenges, we aim to create more flexible and efficient models for mobile vision tasks.
+\section*{4 METHOD}
+\subsection*{4.1 UNIVERSAL INVERTED BOTTLENECK (UIB) BLOCK}
+We introduce the Universal Inverted Bottleneck (UIB) block, a flexible extension of the Inverted Bottleneck block used in MobileNetV2 and subsequent architectures. The UIB block addresses the limitations of fixed convolutional block structures, enabling more adaptive neural network designs for mobile vision tasks.
+The UIB block extends the traditional Inverted Bottleneck block by incorporating two optional depthwise convolutions: one before the expansion layer and one between the expansion and projection layers. This flexible structure allows for four distinct architectural variants:
+1. Original Inverted Bottleneck: No additional depthwise convolutions
+2. ConvNext-like: Depthwise convolution before the expansion layer
+3. ExtraDW: Both optional depthwise convolutions included
+4. Feed-Forward Network (FFN): No depthwise convolutions
+Formally, we define the UIB block as a function f_{\text {UBB }}: \mathbb{R}^{H \times W \times C_{\text {in }}} \rightarrow \mathbb{R}^{H \times W \times C_{\text {out }}}, where H, W, C_{\text {in }}, and C_{\text {out }} represent the height, width, input channels, and output channels, respectively. The UIB block can be expressed as:
+\[
+f_{UIB}(x)=PW_{\text {proj }}(DW_{\text {post }}(PW_{\text {exp }}(DW_{\text {pre }}(x))))
+\]
+where PW_{\text {exp }} and PW_{\text {proj }} are pointwise convolutions for expansion and projection, respectively, and DW_{\text {pre }} and DW_{\text {post }} are the optional depthwise convolutions.
+The flexibility of the UIB block allows for more efficient feature extraction and representation learning. By selectively including or excluding the optional depthwise convolutions, we can adapt the block's structure to better suit different tasks and hardware constraints.
+4.2 MOBILENETV4 ARCHITECTURE
+Building upon the UIB block, we propose the MobileNetV4 architecture, which incorporates UIB blocks throughout its structure. We implement three variants of the MobileNetV4 architecture:
+- MobileNetV4-Small: A compact model for highly constrained mobile devices
+- MobileNetV4-Medium: A balanced model offering a trade-off between accuracy and efficiency
+- MobileNetV4-Large: A more powerful model for devices with greater computational resources
+Each variant uses a different configuration of UIB blocks, with varying numbers of channels and layers to achieve the desired model size and computational complexity.
+\subsection*{4.3 TRAINING PROCESS}
+We train our MobileNetV4 models using the Adam optimizer [Kingma & Ba 2014] with a learning rate schedule similar to that used in Vaswani et al. (2017). We use cross-entropy loss as our objective function and apply standard data augmentation techniques, including random cropping and horizontal flipping, to improve generalization.
+For our experiments, we use the CIFAR-10 dataset, which consists of 60,000 32 \times 32 color images in 10 classes, with 6,000 images per class. The dataset is split into 50,000 training images and 10,000 test images. We train each model variant for 30 epochs with a batch size of 128.
+\subsection*{4.4 EXPERIMENTAL VARIANTS}
+In addition to the three main MobileNetV4 variants, we also evaluate a modified UIB configuration:
+- ExtraDW variant: This configuration sets both DW_{\text {pre }} and DW_{\text {post }} to be active in all UIB blocks, potentially increasing the model's representational power at the cost of additional computational complexity.
+By introducing the UIB block and incorporating it into the MobileNetV4 architecture, we aim to push the boundaries of efficient neural network design for mobile vision tasks. The flexibility and adaptability of our approach allow for fine-tuned trade-offs between model accuracy, computational complexity, and inference speed, addressing the key challenges outlined in our problem setting.
+Figure3 illustrates the test accuracy achieved by different MobileNetV4 configurations, demonstrating the performance improvements gained through the use of UIB blocks.
+\section*{5 EXPERIMENTAL SETUP}
+Our experimental setup is designed to evaluate the performance of the Universal Inverted Bottleneck (UIB) block in the context of MobileNetV4 architectures. We focus on image classification tasks using the CIFAR-10 dataset [Goodfellow et al. (2016), a widely used benchmark in computer vision research.
+The CIFAR-10 dataset consists of 60,000 32 \times 32 Color images across 10 classes, with 6,000 images per class. We use the standard split of 50,000 training images and 10,000 test images . This dataset provides a good balance between complexity and computational requirements, making it suitable for evaluating mobile-focused architectures.
+We implement and evaluate four variants of the MobileNetV4 architecture:
+- MobileNetV4-Small: A compact Model designed for highly constrained mobile devices.
+- MobileNetV4-Medium: A balanced model offering a trade-off between accuracy and efficiency.
+Test Accuracy Across Runs for cifar10
+
+Figure 1: Test accuracy comparison across different MobileNetV4 configurations on CIFAR-10
+- MobileNetV4-Large: A more powerful model for devices with greater computational resources.
+- MobileNetV4-Small ExtraDW: A variant of the Small model with both optional depthwise convolutions in all UIB blocks.
+We train each model variant for 30 epochs using the Adam optimizer [Kingma & Ba (2014) with an initial learning rate of 0.01 and a batch size of 128. We apply a cosine annealing learning rate schedule similar to that used in Vaswani et al. (2017). For regularization, we use a weight decay of 1e-4. Standard data augmentation techniques, including random cropping and horizontal flipping, are applied to improve generalization.
+We evaluate our models using two primary metrics:
+- Test Accuracy: The classification accuracy on the CIFAR-10 test set, which measures the model's ability to generalize to unseen data.
+- Training Time: The total time required to train the model for 30 epochs, which provides insight into the computational efficiency of each architecture.
+Our implementation is based on PyTorch { }^{\text {Paszke et al. }} (2019). All experiments are conducted on a single machine with an Intel Core i7 processor and 16GB of RAM, simulating the resource constraints of high-end mobile devices.
+As a baseline for comparison, we implement a standard MobileNetV3-Small architecture without UIB blocks. This allows us to quantify the improvements gained by incorporating the UIB blocks into the MobileNetV4 designs.
+Figure 3 illustrates the test accuracy achieved by different MobileNetV4 configurations, demonstrating the performance improvements gained through the use of UIB blocks.
+By systematically evaluating these model variants and comparing them against the baseline, we aim to demonstrate the effectiveness of the UIB block in improving the accuracy and efficiency of mobile-focused neural network architectures.
+Test Accuracy Across Runs for cifar10
+
+Figure 2: Test accuracy comparison across different MobileNetV4 configurations on CIFAR-10
+\section*{6 RESULTS}
+In this section, we present the results of our experiments evaluating the Universal Inverted Bottleneck (UIB) block in MobileNetV4 architectures on the CIFAR-10 dataset. We compare the performance of different model variants against a baseline MobileNetV3-Small architecture without UIB blocks.
+\begin{tabular}{lcc}
+\hline Model & Test Accuracy (%) & Training Time (s) 
+
+\hline Baseline (MobileNetV3-Small) & 65.93 & 224.63 
+
+MobileNetV4-Small & 77.84 & 233.25 
+
+MobileNetV4-Medium & 77.27 & 232.22 
+
+MobileNetV4-Large & 77.40 & 234.47 
+
+MobileNetV4-Small (ExtraDW) & 66.54 & 255.60 
+
+\hline
+\end{tabular}
+Table 1: Performance comparison of MobileNetV4 variants on CIFAR-10
+Table 1 summarizes the performance of our MobileNetV4 variants compared to the baseline MobileNetV3-Small model. The results demonstrate that the incorporation of UIB blocks in MobileNetV4 architectures leads to significant improvements in classification accuracy on the CIFAR-10 dataset. The MobileNetV4-Small model achieves the highest test accuracy of 77.84%, representing an 11.91 percentage point increase over the baseline. This substantial improvement comes at a modest cost of only 8.62 seconds (3.8%) increase in training time.
+Interestingly, the larger MobileNetV4 variants (Medium and Large) do not show further improvements in accuracy compared to the Small variant. The MobileNetV4-Medium model achieves 77.27% accuracy, while the MobileNetV4-Large model reaches 77.40%. These results suggest that for the CIFAR-10 dataset, the additional capacity of the larger models does not translate into improved performance, highlighting the effectiveness of the UIB blocks in the smaller architecture.
+The ExtraDW variant of MobileNetV4-Small, which includes both optional depthwise convolutions in all UIB blocks, shows only a marginal improvement over the baseline (66.54% vs. 65.93%). This configuration also results in the longest training time (255.60 seconds), indicating that the additional complexity introduced by the extra depthwise convolutions may not be beneficial for this particular task and dataset.
+Figure 3: Test accuracy comparison across different MobileNetV4 configurations on CIFAR-10
+Figure 3 provides a visual comparison of the test accuracies achieved by different MobileNetV4 configurations. The plot clearly illustrates the significant performance gain of the UIB-based models over the baseline, with the MobileNetV4-Small model standing out as the top performer.
+
+Figure 4: Training and validation loss curves for MobileNetV4 variants on CIFAR-10
+Figure 4 shows the training and validation loss curves for all runs. The UIB-based models (except for the ExtraDW variant) demonstrate faster convergence and lower final loss values compared to the baseline. This suggests that the UIB blocks enable more efficient feature extraction and representation learning, leading to improved model performance.
+Figure 4 compares the total training time for each model configuration. While the UIB-based models generally require slightly more training time than the baseline, the increase is relatively small (less than 5 % for the best-performing MobileNetV4-Small model). The ExtraDW variant shows the highest increase in training time, which aligns with its more complex structure.
+\begin{tabular}{|c|c|c|c|c|}
+\hline & Training Time Comparison for cifar10 & & & 
+
+\hline 224.632 & 233.255 & 232.225 & 234.475 & 
+
+\hline
+\end{tabular}
+Figure 5: Training time comparison for MobileNetV4 variants on CIFAR-10
+It is important to note some limitations of our study. First, our experiments were conducted on a single dataset (CIFAR-10) and may not generalize to more complex datasets or real-world scenarios. Additionally, we used a fixed set of hyperparameters across all models, which may not be optimal for each specific architecture. Future work could explore more extensive hyperparameter tuning and evaluate the models on a wider range of datasets and tasks.
+In conclusion, our results demonstrate the effectiveness of the Universal Inverted Bottleneck (UIB) block in improving the performance of mobile-focused neural network architectures. The MobileNetV4-Small model, in particular, shows a significant improvement in accuracy over the baseline while maintaining computational efficiency. These findings suggest that the UIB block's flexibility allows for more effective feature extraction and representation learning, paving the way for more efficient mobile vision models.
+\section*{7 CONCLUSIONS AND FUTURE WORK}
+In this paper, we introduced and evaluated the Universal Inverted Bottleneck (UIB) block, a flexible extension of the MobileNet Inverted Bottleneck block, in the context of MobileNetV4 architectures. Our experiments on the CIFAR-10 dataset demonstrated significant improvements in accuracy compared to baseline architectures. The MobileNetV4-Small model with UIB blocks achieved a test accuracy of 77.84 %, representing an 11.91 percentage point increase over the baseline MobileNetV3Small model (65.93 %).
+The results show the effectiveness of the UIB block in enhancing the performance of mobile connected neural network architectures. Notably, we observed that larger model variants (MobileNetV4Medium and Large) did not yield further improvements in accuracy compared to the MobileNetV4Small model. The MobileNetV4-Medium achieved 77.27% accuracy, while the MobileNetV4-Large reached 77.40 %, both slightly lower than the Small variant. This finding emphasizes the importance of careful architecture design and suggests that increased model capacity does not always translate to improved performance, especially for smaller datasets like CIFAR-10.
+Our ExtraDW variant, which incorporated additional depthwise convolutions in all UIB blocks, showed only marginal improvement over the baseline (66.54% vs. 65.93 % ) while significantly increasing the training time. This result underscores that additional complexity does not always lead to better performance and highlights the need for balanced design choices in mobile-focused architectures.
+The study has several limitations that should be addressed in future work. First, our experiments were conducted on a single dataset (CIFAR-10)and may not generalize to more complex datasets
+or real-world scenarios. Second, we used a fixed set of hyperparameters across all models, which may not be optimal for each specific architecture. Future research should explore the performance of UIB-based models on larger and more diverse datasets, as well as investigate more extensive hyperparameter tuning techniques.
+Future work could explore several promising directions:
+1. Investigate the application of UIB blocks in other mobile-focused model families, such as EfficientNet or MobileViT, to assess their generalizability. 2. Develop techniques for automatically selecting the optimal UIB variant for a given task and hardware constraint, leading to more adaptive and efficient neural network designs. 3. Extend the evaluation to larger-scale datasets and real-world mobile deployment scenarios to provide insights into the practical implications of the UIB block. 4. Explore the impact of different UIB configurations on model latency and energy consumption across various mobile hardware platforms. 5. Investigate the potential of UIB blocks in other computer vision tasks beyond image classification, such as object detection and semantic segmentation.
+The flexibility and adaptability of the UIB block open up new possibilities for designing efficient neural network architectures for mobile and edge devices. By enabling more effective feature extraction and representation learning, UIB-based models could potentially improve the performance of a wide range of mobile vision tasks. As mobile and edge computing continue to grow in importance, the development of more efficient and accurate neural network architectures, such as those based on the UIB block, will play a crucial role in enabling advanced AI capabilities on resource-constrained environments.
+In conclusion, our work demonstrates the potential of the Universal Inverted Bottleneck block in improving the efficiency and accuracy of mobile-focused neural networks. While our results on the CIFAR-10 dataset are promising, further research is needed to fully explore the capabilities and limitations of UIB-based architectures across a broader range of tasks and deployment scenarios.
+This work was generated by THE AI SCIENTIST [Lu et al.
