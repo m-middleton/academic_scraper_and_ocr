@@ -22,10 +22,10 @@ The system operates as a multi-stage processing pipeline:
 
 1.  **Data Acquisition (Scraping)**: PDF documents are fetched (e.g., by `src/scrapper/paper_scrape.py`) and stored (e.g., in `data/pdfs/`).
 2.  **Preprocessing (PDF to Image)**: PDFs are converted into PNG images page by page (e.g., by `src/ocr/pdf_to_png.py`), with outputs to a directory like `data/images/`.
-3.  **OCR Execution**: The GOT-OCR2.0 engine processes these images to extract text, orchestrated by scripts like `src/ocr/multi_page_run_ocr_2.0.py`. Raw text might be stored in `data/raw_text/`.
-4.  **Postprocessing (Text Cleaning)**: The raw OCR output is refined (e.g., by `src/process_pdf/clean_text.py`), with cleaned text potentially in `data/processed_text/`.
-5.  **Structuring (JSON Output)**: Cleaned text is formatted into JSON (e.g., by `src/process_pdf/create_json.py`, `src/process_pdf/combine_json.py`), with final outputs in `data/processed_json/` and potentially an aggregated file like `data/all_processed_data.json`.
-6.  **(Potential) Evaluation**: Metrics on pipeline output quality may be calculated (related to `data/metrics/`).
+3.  **OCR Execution**: The GOT-OCR2.0 engine processes these images to extract text, orchestrated by `src/ocr/multi_page_run_ocr_2.0.py`. Raw text stored in `data/raw_text/`.
+4.  **Postprocessing (Text Cleaning)**: The raw OCR output is refined (e.g., by `src/process_pdf/clean_text.py`), with cleaned text in `data/processed_text/`.
+5.  **Structuring (JSON Output)**: Cleaned text is formatted into JSON (e.g., by `src/process_pdf/create_json.py`), with final outputs in `data/processed_json/`.
+6.  **Evaluation**: Metrics on papers are stored and combined with jsons (e.g., by `src/process_pdf/combine_json.py`) (`data/metrics/`) results in aggregated file like `data/all_processed_data.json`.
 
 ## Technology Stack
 
